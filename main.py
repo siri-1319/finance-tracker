@@ -1,4 +1,5 @@
 # main.py
+from collections import deque
 import heapq
 # This list will store all our transactions temporarily (in memory)
 import database
@@ -153,6 +154,41 @@ def show_date_range_report():
         print(f"Date: {row[1]} | Category: {row[2]} | Amount: {row[3]} | Description: {row[4]}")
         total += row[3]
     print(f"\nNet total for this period: {total}\n")
+def add_recurring():
+    """Add a recurring transaction template"""
+    category = input("Enter category: ")
+    amount = float(input("Enter amount (negative for expense, positive for income): "))
+    description = input("Enter description: ")
+    frequency = input("Enter frequency (e.g., Monthly): ")
+    
+    database.add_recurring(category, amount, description, frequency)
+    print(f"Recurring transaction added: {category} ({frequency})\n")
+
+
+def process_recurring():
+    """Process all recurring transactions using a queue (FIFO)"""
+    recurring_items = database.get_all_recurring()
+    
+    if not recurring_items:
+        print("No recurring transactions set up.\n")
+        return
+    
+    # Build a queue
+    queue = deque(recurring_items)
+    
+    date = input("Enter date to apply these transactions (YYYY-MM-DD): ")
+    
+    print("\n--- Processing Recurring Transactions ---")
+    while queue:
+        item = queue.popleft()  # FIFO: process oldest-added first
+        # item = (id, category, amount, description, frequency)
+        category = item[1]
+        amount = item[2]
+        description = item[3]
+        
+        database.add_transaction(date, category, amount, description)
+        print(f"Processed: {category} -> {amount} ({description})")
+    print()
 def main_menu():
     """Main loop showing menu options to user"""
     while True:
@@ -167,9 +203,10 @@ def main_menu():
         print("8. Show Upcoming Bills (sorted by due date)")
         print("9. Show Top 3 Biggest Expenses")
         print("10. Show Transactions by Date Range")
-        print("11. Exit")
-        
-        choice = input("Enter your choice (1-11): ")
+        print("11. Add Recurring Transaction")
+        print("12. Process Recurring Transactions")
+        print("13. Exit")
+        choice = input("Enter your choice (1-13): ")
         
         if choice == '1':
             add_transaction()
@@ -192,6 +229,10 @@ def main_menu():
         elif choice == '10':
             show_date_range_report()
         elif choice == '11':
+            add_recurring()
+        elif choice == '12':
+            process_recurring()
+        elif choice == '13':
             print("Goodbye!")
             break
 

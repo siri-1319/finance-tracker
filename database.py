@@ -50,6 +50,23 @@ def create_bills_table():
     
     conn.commit()
     conn.close()
+def create_recurring_table():
+    """Create table for recurring transactions"""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS recurring (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category TEXT,
+            amount REAL,
+            description TEXT,
+            frequency TEXT
+        )
+    """)
+    
+    conn.commit()
+    conn.close()
 def add_transaction(date, category, amount, description):
     """Insert a new transaction into the database"""
     conn = sqlite3.connect(DB_NAME)
@@ -137,7 +154,32 @@ def get_transactions_by_date_range(start_date, end_date):
     rows = cursor.fetchall()
     conn.close()
     return rows
+def add_recurring(category, amount, description, frequency):
+    """Add a recurring transaction template"""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        INSERT INTO recurring (category, amount, description, frequency)
+        VALUES (?, ?, ?, ?)
+    """, (category, amount, description, frequency))
+    
+    conn.commit()
+    conn.close()
+
+
+def get_all_recurring():
+    """Fetch all recurring transaction templates"""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT * FROM recurring")
+    rows = cursor.fetchall()
+    
+    conn.close()
+    return rows
 if __name__ == "__main__":
     create_table()
     create_budget_table()
     create_bills_table()
+    create_recurring_table()
