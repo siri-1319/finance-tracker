@@ -1,51 +1,45 @@
 # main.py
 
 # This list will store all our transactions temporarily (in memory)
-transactions = []
-
+import database
 def add_transaction():
-    """Ask user for transaction details and add to the list"""
     date = input("Enter date (YYYY-MM-DD): ")
     category = input("Enter category (e.g., Food, Salary, Rent): ")
     amount = float(input("Enter amount (use negative for expense, positive for income): "))
     description = input("Enter description: ")
-    
-    transaction = {
-        "date": date,
-        "category": category,
-        "amount": amount,
-        "description": description
-    }
-    
-    transactions.append(transaction)
+    database.add_transaction(date, category, amount, description)
     print("Transaction added successfully!\n")
 
 
 def view_all_transactions():
-    """Display all transactions"""
-    if not transactions:
+    """Display all transactions from database"""
+    rows = database.get_all_transactions()
+    
+    if not rows:
         print("No transactions found.\n")
         return
     
     print("\n--- All Transactions ---")
-    for t in transactions:
-        print(f"Date: {t['date']} | Category: {t['category']} | Amount: {t['amount']} | Description: {t['description']}")
+    for row in rows:
+        # row = (id, date, category, amount, description)
+        print(f"ID: {row[0]} | Date: {row[1]} | Category: {row[2]} | Amount: {row[3]} | Description: {row[4]}")
     print()
 
 
 def total_balance():
     """Calculate and show total balance"""
-    total = sum(t['amount'] for t in transactions)
+    rows = database.get_all_transactions()
+    total = sum(row[3] for row in rows)  # row[3] is amount
     print(f"\nTotal Balance: {total}\n")
-
 
 def total_by_category():
     """Show total spending/income grouped by category"""
-    category_totals = {}  # this is a dictionary (hash map)
+    rows = database.get_all_transactions()
+    category_totals = {}
     
-    for t in transactions:
-        cat = t['category']
-        amount = t['amount']
+    for row in rows:
+        cat = row[2]      # category
+        amount = row[3]   # amount
         
         if cat in category_totals:
             category_totals[cat] += amount
@@ -56,7 +50,6 @@ def total_by_category():
     for category, total in category_totals.items():
         print(f"{category}: {total}")
     print()
-
 
 def main_menu():
     """Main loop showing menu options to user"""
@@ -87,4 +80,5 @@ def main_menu():
 
 # This runs the program
 if __name__ == "__main__":
+    database.create_table()
     main_menu()
