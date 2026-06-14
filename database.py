@@ -123,6 +123,20 @@ def get_all_bills():
     
     conn.close()
     return rows
+def get_transactions_by_date_range(start_date, end_date):
+    """Fetch transactions between two dates (inclusive)"""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT * FROM transactions
+        WHERE date BETWEEN ? AND ?
+        ORDER BY date
+    """, (start_date, end_date))
+    
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
 if __name__ == "__main__":
     create_table()
     create_budget_table()

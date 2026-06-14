@@ -136,6 +136,23 @@ def show_top_expenses(n=3):
         print(f"Date: {row[1]} | Category: {row[2]} | Amount: {amount} | Description: {row[4]}")
         count += 1
     print()
+def show_date_range_report():
+    """Show transactions between two dates"""
+    start_date = input("Enter start date (YYYY-MM-DD): ")
+    end_date = input("Enter end date (YYYY-MM-DD): ")
+    
+    rows = database.get_transactions_by_date_range(start_date, end_date)
+    
+    if not rows:
+        print("No transactions found in this date range.\n")
+        return
+    
+    print(f"\n--- Transactions from {start_date} to {end_date} ---")
+    total = 0
+    for row in rows:
+        print(f"Date: {row[1]} | Category: {row[2]} | Amount: {row[3]} | Description: {row[4]}")
+        total += row[3]
+    print(f"\nNet total for this period: {total}\n")
 def main_menu():
     """Main loop showing menu options to user"""
     while True:
@@ -149,9 +166,10 @@ def main_menu():
         print("7. Add Bill")
         print("8. Show Upcoming Bills (sorted by due date)")
         print("9. Show Top 3 Biggest Expenses")
-        print("10. Exit")
+        print("10. Show Transactions by Date Range")
+        print("11. Exit")
         
-        choice = input("Enter your choice (1-10): ")
+        choice = input("Enter your choice (1-11): ")
         
         if choice == '1':
             add_transaction()
@@ -172,6 +190,8 @@ def main_menu():
         elif choice == '9':
             show_top_expenses()
         elif choice == '10':
+            show_date_range_report()
+        elif choice == '11':
             print("Goodbye!")
             break
 
