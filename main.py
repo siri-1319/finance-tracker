@@ -1,5 +1,5 @@
 # main.py
-
+import heapq
 # This list will store all our transactions temporarily (in memory)
 import database
 def add_transaction():
@@ -88,6 +88,54 @@ def check_budget_status():
         
         print(f"{category}: Spent {spent} / Limit {limit_amount} -> {status} (Remaining: {remaining})")
     print()
+def add_bill():
+    """Ask user for bill details and save to database"""
+    name = input("Enter bill name (e.g., Electricity): ")
+    due_date = input("Enter due date (YYYY-MM-DD): ")
+    amount = float(input("Enter amount: "))
+    
+    database.add_bill(name, due_date, amount)
+    print(f"Bill added: {name} due on {due_date}\n")
+
+
+def show_upcoming_bills():
+    """Show bills sorted by due date using a min-heap"""
+    bills = database.get_all_bills()
+    
+    if not bills:
+        print("No bills found.\n")
+        return
+    
+    # Build a min-heap based on due_date
+    heap = []
+    for bill in bills:
+        # bill = (id, name, due_date, amount)
+        heapq.heappush(heap, (bill[2], bill[1], bill[3]))  # (due_date, name, amount)
+    
+    print("\n--- Upcoming Bills (earliest first) ---")
+    while heap:
+        due_date, name, amount = heapq.heappop(heap)
+        print(f"{name}: Due {due_date} -> Amount: {amount}")
+    print()
+
+
+def show_top_expenses(n=3):
+    """Show top N biggest expenses using a max-heap (via negation)"""
+    transactions = database.get_all_transactions()
+    
+    expenses = []
+    for row in transactions:
+        amount = row[3]
+        if amount < 0:  # only expenses
+            heapq.heappush(expenses, (amount, row))  # smallest (most negative) first = heapq is min-heap
+    
+    print(f"\n--- Top {n} Biggest Expenses ---")
+    count = 0
+    while expenses and count < n:
+        amount, row = heapq.heappop(expenses)
+        print(f"Date: {row[1]} | Category: {row[2]} | Amount: {amount} | Description: {row[4]}")
+        count += 1
+    print()
 def main_menu():
     """Main loop showing menu options to user"""
     while True:
@@ -98,9 +146,12 @@ def main_menu():
         print("4. Show Totals by Category")
         print("5. Set Budget")
         print("6. Check Budget Status")
-        print("7. Exit")
+        print("7. Add Bill")
+        print("8. Show Upcoming Bills (sorted by due date)")
+        print("9. Show Top 3 Biggest Expenses")
+        print("10. Exit")
         
-        choice = input("Enter your choice (1-7): ")
+        choice = input("Enter your choice (1-10): ")
         
         if choice == '1':
             add_transaction()
@@ -115,11 +166,14 @@ def main_menu():
         elif choice == '6':
             check_budget_status()
         elif choice == '7':
+            add_bill()
+        elif choice == '8':
+            show_upcoming_bills()
+        elif choice == '9':
+            show_top_expenses()
+        elif choice == '10':
             print("Goodbye!")
             break
-        else:
-            print("Invalid choice. Please try again.\n")
-
 
 # This runs the program
 if __name__ == "__main__":
