@@ -51,6 +51,22 @@ On running the program, you'll see a menu with options:
 15. Exit
 Simply enter the number corresponding to the action you want to perform.
 
+## Web Application (Flask)
+
+In addition to the CLI version, this project includes a web-based interface built with Flask.
+
+### Running the web app
+python app.py
+
+Then open your browser and go to:
+http://127.0.0.1:5000
+
+### Web Features
+
+- **Home page**: View all transactions and add new ones via a form
+- **Budget page** (`/budget`): Set category budgets and view spending vs. budget status
+- **Charts page** (`/charts`): View pie chart (spending by category) and bar chart (monthly net totals)
+
 ## Project Structure
 finance-tracker/
 
