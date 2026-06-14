@@ -1,4 +1,5 @@
 # main.py
+import matplotlib.pyplot as plt
 from collections import deque
 import heapq
 # This list will store all our transactions temporarily (in memory)
@@ -189,6 +190,55 @@ def process_recurring():
         database.add_transaction(date, category, amount, description)
         print(f"Processed: {category} -> {amount} ({description})")
     print()
+def show_pie_chart():
+    """Show a pie chart of spending by category"""
+    rows = database.get_all_transactions()
+    
+    category_totals = {}
+    for row in rows:
+        category = row[2]
+        amount = row[3]
+        if amount < 0:  # only expenses
+            category_totals[category] = category_totals.get(category, 0) + abs(amount)
+    
+    if not category_totals:
+        print("No expenses to show.\n")
+        return
+    
+    labels = list(category_totals.keys())
+    sizes = list(category_totals.values())
+    
+    plt.figure(figsize=(6, 6))
+    plt.pie(sizes, labels=labels, autopct='%1.1f%%')
+    plt.title("Spending by Category")
+    plt.show()
+
+
+def show_bar_chart():
+    """Show a bar chart of net total per month"""
+    rows = database.get_all_transactions()
+    
+    if not rows:
+        print("No transactions to show.\n")
+        return
+    
+    monthly_totals = {}
+    for row in rows:
+        date = row[1]      # format: YYYY-MM-DD
+        amount = row[3]
+        month = date[:7]   # extract YYYY-MM
+        monthly_totals[month] = monthly_totals.get(month, 0) + amount
+    
+    months = sorted(monthly_totals.keys())
+    totals = [monthly_totals[m] for m in months]
+    
+    plt.figure(figsize=(8, 5))
+    plt.bar(months, totals, color='skyblue')
+    plt.title("Monthly Net Total")
+    plt.xlabel("Month")
+    plt.ylabel("Net Amount")
+    plt.axhline(0, color='black', linewidth=0.8)
+    plt.show()
 def main_menu():
     """Main loop showing menu options to user"""
     while True:
@@ -205,8 +255,10 @@ def main_menu():
         print("10. Show Transactions by Date Range")
         print("11. Add Recurring Transaction")
         print("12. Process Recurring Transactions")
-        print("13. Exit")
-        choice = input("Enter your choice (1-13): ")
+        print("13. Show Spending Pie Chart")
+        print("14. Show Monthly Trend Bar Chart")
+        print("15. Exit")
+        choice = input("Enter your choice (1-15): ")
         
         if choice == '1':
             add_transaction()
@@ -233,9 +285,12 @@ def main_menu():
         elif choice == '12':
             process_recurring()
         elif choice == '13':
+            show_pie_chart()
+        elif choice == '14':
+            show_bar_chart()
+        elif choice == '15':
             print("Goodbye!")
             break
-
 # This runs the program
 if __name__ == "__main__":
     database.create_table()
