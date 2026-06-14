@@ -1,3 +1,8 @@
+import matplotlib
+matplotlib.use('Agg')  # needed for Flask (no GUI popup)
+import matplotlib.pyplot as plt
+import io
+import base64
 from flask import Flask, render_template, request, redirect, url_for
 import database
 
@@ -20,6 +25,42 @@ def add_transaction():
     
     database.add_transaction(date, category, amount, description)
     return redirect(url_for('home'))
+@app.route('/budget')
+def budget_status():
+    """Show budget vs spending"""
+    budgets = database.get_all_budgets()
+    transactions = database.get_all_transactions()
+    
+    spending = {}
+    for row in transactions:
+        category = row[2]
+        amount = row[3]
+        if amount < 0:
+            spending[category] = spending.get(category, 0) + abs(amount)
+    
+    budget_data = []
+    for category, limit_amount in budgets:
+        spent = spending.get(category, 0)
+        remaining = limit_amount - spent
+        status = "OVER BUDGET" if spent > limit_amount else "OK"
+        budget_data.append({
+            'category': category,
+            'spent': spent,
+            'limit': limit_amount,
+            'remaining': remaining,
+            'status': status
+        })
+    
+    return render_template('budget.html', budget_data=budget_data)
+
+
+@app.route('/set_budget', methods=['POST'])
+def set_budget():
+    """Handle setting a budget"""
+    category = request.form['category']
+    limit_amount = float(request.form['limit_amount'])
+    database.set_budget(category, limit_amount)
+    return redirect(url_for('budget_status'))
 if __name__ == '__main__':
     database.create_table()
     database.create_budget_table()

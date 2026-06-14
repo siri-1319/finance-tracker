@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Budget Status</title>
+</head>
+<body>
+    <h1>Budget Status</h1>
+    <a href="/">Back to Home</a>
+    
+    <h2>Set Budget</h2>
+    <form action="/set_budget" method="POST">
+        <label>Category:</label>
+        <input type="text" name="category" required><br><br>
+        
+        <label>Limit Amount:</label>
+        <input type="number" step="0.01" name="limit_amount" required><br><br>
+        
+        <button type="submit">Set Budget</button>
+    </form>
+    
+    <h2>Status</h2>
+    <table border="1">
+        <tr>
+            <th>Category</th>
+            <th>Spent</th>
+            <th>Limit</th>
+            <th>Remaining</th>
+            <th>Status</th>
+        </tr>
+        {% for b in budget_data %}
+        <tr>
+            <td>{{ b.category }}</td>
+            <td>{{ b.spent }}</td>
+            <td>{{ b.limit }}</td>
+            <td>{{ b.remaining }}</td>
+            <td>{{ b.status }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
