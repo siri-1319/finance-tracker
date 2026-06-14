@@ -10,7 +10,16 @@ def home():
     transactions = database.get_all_transactions()
     return render_template('index.html', transactions=transactions)
 
-
+@app.route('/add', methods=['POST'])
+def add_transaction():
+    """Handle form submission to add a new transaction"""
+    date = request.form['date']
+    category = request.form['category']
+    amount = float(request.form['amount'])
+    description = request.form['description']
+    
+    database.add_transaction(date, category, amount, description)
+    return redirect(url_for('home'))
 if __name__ == '__main__':
     database.create_table()
     database.create_budget_table()
