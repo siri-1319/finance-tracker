@@ -61,6 +61,58 @@ def set_budget():
     limit_amount = float(request.form['limit_amount'])
     database.set_budget(category, limit_amount)
     return redirect(url_for('budget_status'))
+@app.route('/charts')
+def charts():
+    """Show pie and bar charts"""
+    transactions = database.get_all_transactions()
+    
+    # Pie chart - spending by category
+    category_totals = {}
+    for row in transactions:
+        category = row[2]
+        amount = row[3]
+        if amount < 0:
+            category_totals[category] = category_totals.get(category, 0) + abs(amount)
+    
+    pie_url = None
+    if category_totals:
+        fig, ax = plt.subplots(figsize=(5, 5))
+        ax.pie(category_totals.values(), labels=category_totals.keys(), autopct='%1.1f%%')
+        ax.set_title("Spending by Category")
+        pie_url = fig_to_base64(fig)
+        plt.close(fig)
+    
+    # Bar chart - monthly net total
+    monthly_totals = {}
+    for row in transactions:
+        date = row[1]
+        amount = row[3]
+        month = date[:7]
+        monthly_totals[month] = monthly_totals.get(month, 0) + amount
+    
+    bar_url = None
+    if monthly_totals:
+        months = sorted(monthly_totals.keys())
+        totals = [monthly_totals[m] for m in months]
+        
+        fig, ax = plt.subplots(figsize=(7, 4))
+        ax.bar(months, totals, color='skyblue')
+        ax.set_title("Monthly Net Total")
+        ax.axhline(0, color='black', linewidth=0.8)
+        bar_url = fig_to_base64(fig)
+        plt.close(fig)
+    
+    return render_template('charts.html', pie_url=pie_url, bar_url=bar_url)
+
+
+def fig_to_base64(fig):
+    """Convert matplotlib figure to base64 string for HTML embedding"""
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', bbox_inches='tight')
+    buf.seek(0)
+    img_base64 = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+    return img_base64
 if __name__ == '__main__':
     database.create_table()
     database.create_budget_table()

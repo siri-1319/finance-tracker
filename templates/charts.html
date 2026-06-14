@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Charts</title>
+</head>
+<body>
+    <h1>Financial Charts</h1>
+    <a href="/">Back to Home</a>
+    
+    {% if pie_url %}
+    <h2>Spending by Category</h2>
+    <img src="data:image/png;base64,{{ pie_url }}">
+    {% endif %}
+    
+    {% if bar_url %}
+    <h2>Monthly Net Total</h2>
+    <img src="data:image/png;base64,{{ bar_url }}">
+    {% endif %}
+</body>
+</html>
