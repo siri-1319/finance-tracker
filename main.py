@@ -50,7 +50,44 @@ def total_by_category():
     for category, total in category_totals.items():
         print(f"{category}: {total}")
     print()
+def set_budget():
+    """Ask user for category and budget limit, save to database"""
+    category = input("Enter category (e.g., Food, Rent, Entertainment): ")
+    limit_amount = float(input("Enter budget limit for this category: "))
+    
+    database.set_budget(category, limit_amount)
+    print(f"Budget set: {category} -> {limit_amount}\n")
 
+
+def check_budget_status():
+    """Compare spending vs budget for each category"""
+    budgets = database.get_all_budgets()
+    
+    if not budgets:
+        print("No budgets set yet.\n")
+        return
+    
+    transactions = database.get_all_transactions()
+    
+    # Calculate spending per category (only expenses, i.e., negative amounts)
+    spending = {}
+    for row in transactions:
+        category = row[2]
+        amount = row[3]
+        if amount < 0:  # expense
+            spending[category] = spending.get(category, 0) + abs(amount)
+    
+    print("\n--- Budget Status ---")
+    for category, limit_amount in budgets:
+        spent = spending.get(category, 0)
+        remaining = limit_amount - spent
+        
+        status = "OK"
+        if spent > limit_amount:
+            status = "OVER BUDGET!"
+        
+        print(f"{category}: Spent {spent} / Limit {limit_amount} -> {status} (Remaining: {remaining})")
+    print()
 def main_menu():
     """Main loop showing menu options to user"""
     while True:
@@ -59,9 +96,11 @@ def main_menu():
         print("2. View All Transactions")
         print("3. Show Total Balance")
         print("4. Show Totals by Category")
-        print("5. Exit")
+        print("5. Set Budget")
+        print("6. Check Budget Status")
+        print("7. Exit")
         
-        choice = input("Enter your choice (1-5): ")
+        choice = input("Enter your choice (1-7): ")
         
         if choice == '1':
             add_transaction()
@@ -72,6 +111,10 @@ def main_menu():
         elif choice == '4':
             total_by_category()
         elif choice == '5':
+            set_budget()
+        elif choice == '6':
+            check_budget_status()
+        elif choice == '7':
             print("Goodbye!")
             break
         else:
